@@ -3,17 +3,14 @@
 #include "cmd_options.h"
 #include "crypto_guard_ctx.h"
 #include <stdexcept>
+#include <string>
 
 namespace CryptoGuard {
 
 class CryptoGuardApp {
 public:
-    CryptoGuardApp(int argc, char *argv[]) {
-        if (!opts_.Parse(argc, argv)) {
-            throw std::runtime_error{"Invalid command line options"};
-        }
-    }
-    ~CryptoGuardApp() {}
+    CryptoGuardApp(int ac, char *av[]);
+    ~CryptoGuardApp() = default;
 
     CryptoGuardApp(const CryptoGuardApp &) = delete;
     CryptoGuardApp &operator=(const CryptoGuardApp &) = delete;
@@ -27,6 +24,12 @@ public:
 private:
     ProgramOptions opts_;
     CryptoGuardCtx ctx_;
+
+    // Helpers
+    std::string checksum();
+    void decrypt();
+    void encrypt();
+    std::string help();
 };
 
 }  // namespace CryptoGuard

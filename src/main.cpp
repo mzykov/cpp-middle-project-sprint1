@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
 
     } catch (const std::exception &e) {
         std::print(std::cerr, "Error: {}\n", e.what());
+        std::print(std::cout, "Try --help option\n");
         return 1;
     }
 
