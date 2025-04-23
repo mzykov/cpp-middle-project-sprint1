@@ -44,6 +44,8 @@ private:
 
     boost::program_options::variables_map parseCommandLine(int ac, char *av[]);
     bool optionsAreConsistent(const boost::program_options::variables_map &vm) const;
+    bool optionIsConsistent(const boost::program_options::variables_map &vm, const std::string &opt,
+                            bool musthave) const;
     void setCommand(const boost::program_options::variables_map &vm);
     void setInputFile(const boost::program_options::variables_map &vm);
     void setOutputFile(const boost::program_options::variables_map &vm);

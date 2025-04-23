@@ -1,4 +1,5 @@
 #include "cmd_options.h"
+#include <utility>
 
 namespace CryptoGuard {
 
@@ -33,7 +34,50 @@ boost::program_options::variables_map ProgramOptions::parseCommandLine(int ac, c
     return vm;
 }
 
-bool ProgramOptions::optionsAreConsistent(const boost::program_options::variables_map &vm) const { return true; }
+bool ProgramOptions::optionsAreConsistent(const boost::program_options::variables_map &vm) const {
+    if (vm.count("help")) {
+        return true;
+    } else if (vm.count("command") == 1) {
+        const auto &cmd = vm["command"].as<std::string>();
+
+        if (!commandMapping_.count(cmd)) {
+            return false;
+        }
+
+        std::unordered_map<ProgramOptions::COMMAND_TYPE, std::vector<std::pair<std::string, bool>>> consistensyMapping =
+            {
+                {ProgramOptions::COMMAND_TYPE::CHECKSUM, {{"input", true}, {"output", false}, {"password", false}}},
+                {ProgramOptions::COMMAND_TYPE::DECRYPT, {{"input", true}, {"output", true}, {"password", true}}},
+                {ProgramOptions::COMMAND_TYPE::ENCRYPT, {{"input", true}, {"output", true}, {"password", true}}},
+            };
+
+        const auto cmd_type = commandMapping_.at(cmd);
+
+        for (const auto &[opt, musthave] : consistensyMapping[cmd_type]) {
+            if (!ProgramOptions::optionIsConsistent(vm, opt, musthave))
+                return false;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool ProgramOptions::optionIsConsistent(const boost::program_options::variables_map &vm, const std::string &opt,
+                                        bool musthave) const {
+    if (vm.contains(opt) != musthave)
+        return false;
+
+    if (musthave) {
+        const auto &val = vm[opt].as<std::string>();
+        if (val.length() == 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 void ProgramOptions::setCommand(const boost::program_options::variables_map &vm) {
     if (vm.count("help")) {
