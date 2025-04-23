@@ -9,7 +9,7 @@ namespace CryptoGuard {
 
 CryptoGuardApp::CryptoGuardApp(int ac, char *av[]) {
     if (!opts_.Parse(ac, av)) {
-        throw std::runtime_error{"Invalid command line options"};
+        throw std::invalid_argument{"Invalid command line options"};
     }
 }
 

@@ -8,8 +8,9 @@ TEST(TestProgramOptions, TestHelp) {
     const char *av[] = {"./CryptoGuard", "--help"};
     // when
     CryptoGuard::ProgramOptions opts;
-    opts.Parse(ac, const_cast<char **>(av));
+    bool ok = opts.Parse(ac, const_cast<char **>(av));
     // then
+    EXPECT_EQ(ok, true);
     EXPECT_EQ(opts.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::HELP);
 }
 
@@ -22,8 +23,9 @@ TEST(TestProgramOptions, TestChecksum) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    opts.Parse(ac, const_cast<char **>(av));
+    bool ok = opts.Parse(ac, const_cast<char **>(av));
     // then
+    EXPECT_EQ(ok, true);
     EXPECT_EQ(opts.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::CHECKSUM);
     EXPECT_EQ(opts.GetInputFile(), "/path/to/file");
 }
@@ -38,8 +40,9 @@ TEST(TestProgramOptions, TestEncrypt) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    opts.Parse(ac, const_cast<char **>(av));
+    bool ok = opts.Parse(ac, const_cast<char **>(av));
     // then
+    EXPECT_EQ(ok, true);
     EXPECT_EQ(opts.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
     EXPECT_EQ(opts.GetInputFile(), "/path/to/input/file");
     EXPECT_EQ(opts.GetOutputFile(), "/path/to/output/file");
@@ -56,10 +59,59 @@ TEST(TestProgramOptions, TestDecrypt) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    opts.Parse(ac, const_cast<char **>(av));
+    bool ok = opts.Parse(ac, const_cast<char **>(av));
     // then
+    EXPECT_EQ(ok, true);
     EXPECT_EQ(opts.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::DECRYPT);
     EXPECT_EQ(opts.GetInputFile(), "/path/to/input/file");
     EXPECT_EQ(opts.GetOutputFile(), "/path/to/output/file");
     EXPECT_EQ(opts.GetPassword(), "QWERTY");
+}
+
+// 5.
+TEST(TestProgramOptions, TestChecksumNoInput) {
+    // given
+    int ac = 3;
+    const char *av[] = {
+        "./CryptoGuard",
+        "--command",
+        "checksum",
+    };
+    // when
+    CryptoGuard::ProgramOptions opts;
+    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    // then
+    EXPECT_EQ(ok, false);
+}
+
+// 6.
+TEST(TestProgramOptions, TestDecryptNoInputOutput) {
+    // given
+    int ac = 3;
+    const char *av[] = {
+        "./CryptoGuard",
+        "--command",
+        "decrypt",
+    };
+    // when
+    CryptoGuard::ProgramOptions opts;
+    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    // then
+    EXPECT_EQ(ok, false);
+}
+
+// 7.
+TEST(TestProgramOptions, TestEncryptNoInputOutput) {
+    // given
+    int ac = 3;
+    const char *av[] = {
+        "./CryptoGuard",
+        "--command",
+        "encrypt",
+    };
+    // when
+    CryptoGuard::ProgramOptions opts;
+    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    // then
+    EXPECT_EQ(ok, false);
 }
