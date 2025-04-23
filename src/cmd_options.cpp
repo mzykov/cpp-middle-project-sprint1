@@ -12,19 +12,19 @@ ProgramOptions::ProgramOptions() : desc_("Allowed options") {
 bool ProgramOptions::Parse(int ac, char *av[]) {
     auto vm = parseCommandLine(ac, av);
 
-    if (!optionsAreConsistent(vm)) {
+    if (!this->optionsAreConsistent(vm)) {
         return false;
     }
 
-    setCommand(vm);
-    setInputFile(vm);
-    setOutputFile(vm);
-    setPasswod(vm);
+    this->setCommand(vm);
+    this->setInputFile(vm);
+    this->setOutputFile(vm);
+    this->setPassword(vm);
 
     return true;
 }
 
-boost::program_options::variables_map parseCommandLine(int ac, char *av[]) {
+boost::program_options::variables_map ProgramOptions::parseCommandLine(int ac, char *av[]) {
     namespace po = boost::program_options;
     po::variables_map vm;
     auto parsed = po::parse_command_line(ac, av, desc_);
@@ -33,9 +33,9 @@ boost::program_options::variables_map parseCommandLine(int ac, char *av[]) {
     return vm;
 }
 
-bool optionsAreConsistent(const boost::program_options::variables_map &vm) const { return true; }
+bool ProgramOptions::optionsAreConsistent(const boost::program_options::variables_map &vm) const { return true; }
 
-void setCommand(const boost::program_options::variables_map &vm) {
+void ProgramOptions::setCommand(const boost::program_options::variables_map &vm) {
     if (vm.count("help")) {
         command_ = commandMapping_["help"];
     } else {
@@ -43,8 +43,22 @@ void setCommand(const boost::program_options::variables_map &vm) {
     }
 }
 
-void setInputFile(const boost::program_options::variables_map &vm) {}
-void setOutputFile(const boost::program_options::variables_map &vm) {}
-void setPassword(const boost::program_options::variables_map &vm) {}
+void ProgramOptions::setInputFile(const boost::program_options::variables_map &vm) {
+    if (vm.count("input")) {
+        inputFile_ = vm["input"].as<std::string>();
+    }
+}
+
+void ProgramOptions::setOutputFile(const boost::program_options::variables_map &vm) {
+    if (vm.count("output")) {
+        outputFile_ = vm["output"].as<std::string>();
+    }
+}
+
+void ProgramOptions::setPassword(const boost::program_options::variables_map &vm) {
+    if (vm.count("password")) {
+        password_ = vm["password"].as<std::string>();
+    }
+}
 
 }  // namespace CryptoGuard

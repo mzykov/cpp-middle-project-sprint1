@@ -6,23 +6,13 @@
 
 namespace CryptoGuard {
 
-CryptoGuardCtx() {
+CryptoGuardCtx::CryptoGuardCtx() {
     // TODO
 }
 
-~CryptoGuardCtx() {
+CryptoGuardCtx::~CryptoGuardCtx() {
     // TODO
 }
-
-void CryptoGuardCtx::EncryptFile(std::iostream &in, std::iostream &out, std::string_view password) {
-    pImpl_->Encrypt(in, out, password);
-}
-
-void CryptoGuardCtx::DecryptFile(std::iostream &in, std::iostream &out, std::string_view password) {
-    pImpl_->Decrypt(in, out, password);
-}
-
-std::string CryptoGuardCtx::CalculateChecksum(std::iostream &in) { return pImpl_->CalculateChecksum(in); }
 
 class CryptoGuardCtx::Impl {
 public:
@@ -34,6 +24,16 @@ public:
 private:
     // TODO
 };
+
+void CryptoGuardCtx::EncryptFile(std::iostream &in, std::iostream &out, std::string_view password) {
+    pImpl_->EncryptFile(in, out, password);
+}
+
+void CryptoGuardCtx::DecryptFile(std::iostream &in, std::iostream &out, std::string_view password) {
+    pImpl_->DecryptFile(in, out, password);
+}
+
+std::string CryptoGuardCtx::CalculateChecksum(std::iostream &in) { return pImpl_->CalculateChecksum(in); }
 
 struct AesCipherParams {
     static const size_t KEY_SIZE = 32;             // AES-256 key size

@@ -17,9 +17,9 @@ public:
     CryptoGuardCtx &operator=(CryptoGuardCtx &&) noexcept = default;
 
     // API
-    void EncryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password);
-    void DecryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password);
-    std::string CalculateChecksum(std::iostream &inStream);
+    void EncryptFile(std::iostream &in, std::iostream &out, std::string_view password);
+    void DecryptFile(std::iostream &in, std::iostream &out, std::string_view password);
+    std::string CalculateChecksum(std::iostream &in);
 
 private:
     class Impl;

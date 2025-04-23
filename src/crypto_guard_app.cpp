@@ -1,4 +1,5 @@
 #include "crypto_guard_app.h"
+#include <fstream>
 #include <iostream>
 #include <print>
 #include <sstream>
@@ -38,26 +39,26 @@ void CryptoGuardApp::Run() {
     }
 }
 
-std::string checksum() {
-    std::ifstream in(opts_.GetInputFile());
+std::string CryptoGuardApp::checksum() {
+    std::fstream in(opts_.GetInputFile(), std::ios::in);
     return ctx_.CalculateChecksum(in);
 }
 
-void decrypt() {
-    std::ifstream in(opts_.GetInputFile());
-    std::ofstream out(opts_.GetOutputFile());
+void CryptoGuardApp::decrypt() {
+    std::fstream in(opts_.GetInputFile(), std::ios::in);
+    std::fstream out(opts_.GetOutputFile(), std::ios::out);
     ctx_.DecryptFile(in, out, opts_.GetPassword());
 }
 
-void encrypt() {
-    std::ifstream in(opts_.GetInputFile());
-    std::ofstream out(opts_.GetOutputFile());
+void CryptoGuardApp::encrypt() {
+    std::fstream in(opts_.GetInputFile(), std::ios::in);
+    std::fstream out(opts_.GetOutputFile(), std::ios::out);
     ctx_.EncryptFile(in, out, opts_.GetPassword());
 }
 
-std::string help() {
+std::string CryptoGuardApp::help() {
     std::stringstream sout;
-    sout << desc_;
+    sout << opts_.GetHelp();
     return sout.str();
 }
 
