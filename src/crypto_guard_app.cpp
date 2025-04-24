@@ -35,24 +35,39 @@ void CryptoGuardApp::Run() {
         break;
 
     default:
-        throw std::runtime_error{"Application internal error"};
+        throw std::logic_error{"Application internal error"};
     }
 }
 
 std::string CryptoGuardApp::checksum() {
     std::fstream in(opts_.GetInputFile(), std::ios::in);
+    if (!in.is_open()) {
+        throw std::runtime_error{"Cannot open file for reading"};
+    }
     return ctx_.CalculateChecksum(in);
 }
 
 void CryptoGuardApp::decrypt() {
     std::fstream in(opts_.GetInputFile(), std::ios::in);
-    std::fstream out(opts_.GetOutputFile(), std::ios::out);
+    if (!in.is_open()) {
+        throw std::runtime_error{"Cannot open file for reading"};
+    }
+    std::fstream out(opts_.GetOutputFile(), std::ios::out | std::ios::trunc);
+    if (!out.is_open()) {
+        throw std::runtime_error{"Cannot open file for writing"};
+    }
     ctx_.DecryptFile(in, out, opts_.GetPassword());
 }
 
 void CryptoGuardApp::encrypt() {
     std::fstream in(opts_.GetInputFile(), std::ios::in);
-    std::fstream out(opts_.GetOutputFile(), std::ios::out);
+    if (!in.is_open()) {
+        throw std::runtime_error{"Cannot open file for reading"};
+    }
+    std::fstream out(opts_.GetOutputFile(), std::ios::out | std::ios::trunc);
+    if (!out.is_open()) {
+        throw std::runtime_error{"Cannot open file for writing"};
+    }
     ctx_.EncryptFile(in, out, opts_.GetPassword());
 }
 
