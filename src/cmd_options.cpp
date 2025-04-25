@@ -51,9 +51,9 @@ bool ProgramOptions::optionsAreConsistent(const boost::program_options::variable
                 {ProgramOptions::COMMAND_TYPE::ENCRYPT, {{"input", true}, {"output", true}, {"password", true}}},
             };
 
-        const auto cmd_type = commandMapping_.at(cmd);
+        const auto cmdType = commandMapping_.at(cmd);
 
-        for (const auto &[opt, musthave] : consistensyMapping[cmd_type]) {
+        for (const auto &[opt, musthave] : consistensyMapping[cmdType]) {
             if (!ProgramOptions::optionIsConsistent(vm, opt, musthave))
                 return false;
         }
