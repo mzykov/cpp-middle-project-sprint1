@@ -13,14 +13,14 @@ ProgramOptions::ProgramOptions() : desc_("Allowed options") {
 bool ProgramOptions::Parse(int ac, char *av[]) {
     auto vm = parseCommandLine(ac, av);
 
-    if (!this->optionsAreConsistent(vm)) {
+    if (!optionsAreConsistent(vm)) {
         return false;
     }
 
-    this->setCommand(vm);
-    this->setInputFile(vm);
-    this->setOutputFile(vm);
-    this->setPassword(vm);
+    setCommand(vm);
+    setInputFile(vm);
+    setOutputFile(vm);
+    setPassword(vm);
 
     return true;
 }
