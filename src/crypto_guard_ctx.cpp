@@ -1,6 +1,7 @@
 #include "crypto_guard_ctx.h"
 #include <array>
 #include <cstddef>
+#include <format>
 #include <iomanip>
 #include <openssl/err.h>
 #include <openssl/evp.h>
@@ -53,11 +54,7 @@ private:
 };
 
 std::exception CryptoGuardCtx::Impl::runtimeCryptoGuardCtxException(std::string_view msg) {
-    std::string err;
-    err += msg;
-    err += "\n";
-    err += ERR_error_string(ERR_get_error(), nullptr);
-    return std::move(std::runtime_error(err));
+    return std::runtime_error{std::format("{}\n{}", msg, ERR_error_string(ERR_get_error(), nullptr))};
 }
 
 AesCipherParams CryptoGuardCtx::Impl::createCipherParamsFromPassword(std::string_view password) {
@@ -86,7 +83,7 @@ evp_cipher_unique_ptr CryptoGuardCtx::Impl::createCipherCtx(std::string_view pas
         EVP_CipherInit_ex(ctx.get(), params.cipher, nullptr, params.key.data(), params.iv.data(), whatToDo);
     }
 
-    return std::move(ctx);
+    return ctx;
 }
 
 std::string CryptoGuardCtx::Impl::getCipherChunk(std::iostream &inStream, EVP_CIPHER_CTX *ctx) {
@@ -151,7 +148,7 @@ evp_md_unique_ptr CryptoGuardCtx::Impl::createMessageDigestCtx(std::string_view 
         throw runtimeCryptoGuardCtxException("EVP_DigestInit_ex2 failed");
     }
 
-    return std::move(mdctx);
+    return mdctx;
 }
 
 std::string CryptoGuardCtx::Impl::getMmessageDigest(std::iostream &inStream, EVP_MD_CTX *mdctx) {
