@@ -6,7 +6,6 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <stdexcept>
-#include <vector>
 
 namespace CryptoGuard {
 
@@ -15,7 +14,7 @@ struct AesCipherParams {
     static const size_t IV_SIZE = 16;              // AES block size (IV length)
     const EVP_CIPHER *cipher = EVP_aes_256_cbc();  // Cipher algorithm
     std::array<unsigned char, KEY_SIZE> key;       // Encryption key
-    std::array<unsigned char, IV_SIZE> iv;         // Initialization vector
+    std::array<unsigned char, IV_SIZE> iv;         // Initialization array
 };
 
 using evp_cipher_unique_ptr =
@@ -44,8 +43,8 @@ private:
 
     AesCipherParams createCipherParamsFromPassword(std::string_view password);
 
-    evp_cipher_unique_ptr createCipherCtx(std::string_view password, int whatToDo);
-    std::string getCipherChunk(std::iostream &in, EVP_CIPHER_CTX *ctx);
+    evp_cipher_unique_ptr createCipherCtx(std::string_view password, CIPHER_ACTION whatToDo);
+    void readWriteCipherByChunk(std::iostream &inStream, std::iostream &outStream, EVP_CIPHER_CTX *ctx);
 
     evp_md_unique_ptr createMessageDigestCtx(std::string_view digestName);
     std::string getMmessageDigest(std::iostream &inStream, EVP_MD_CTX *mdctx);
@@ -71,7 +70,7 @@ AesCipherParams CryptoGuardCtx::Impl::createCipherParamsFromPassword(std::string
     return params;
 }
 
-evp_cipher_unique_ptr CryptoGuardCtx::Impl::createCipherCtx(std::string_view password, int whatToDo) {
+evp_cipher_unique_ptr CryptoGuardCtx::Impl::createCipherCtx(std::string_view password, CIPHER_ACTION whatToDo) {
     auto ctx = evp_cipher_unique_ptr(EVP_CIPHER_CTX_new());
 
     if (!ctx) {
@@ -80,56 +79,52 @@ evp_cipher_unique_ptr CryptoGuardCtx::Impl::createCipherCtx(std::string_view pas
 
     if (password.length() > 0) {
         auto params = createCipherParamsFromPassword(password);
-        EVP_CipherInit_ex(ctx.get(), params.cipher, nullptr, params.key.data(), params.iv.data(), whatToDo);
+        EVP_CipherInit_ex(ctx.get(), params.cipher, nullptr, params.key.data(), params.iv.data(),
+                          static_cast<int>(whatToDo));
     }
 
     return ctx;
 }
 
-std::string CryptoGuardCtx::Impl::getCipherChunk(std::iostream &inStream, EVP_CIPHER_CTX *ctx) {
+void CryptoGuardCtx::Impl::readWriteCipherByChunk(std::iostream &inStream, std::iostream &outStream,
+                                                  EVP_CIPHER_CTX *ctx) {
     constexpr int chunkSizeInBytes = 1024;
 
-    std::vector<char> chunk(chunkSizeInBytes, 0);
-    std::vector<unsigned char> workingBuf(chunk.size() + EVP_MAX_BLOCK_LENGTH);
+    std::array<char, chunkSizeInBytes> chunk;
+    std::array<unsigned char, chunkSizeInBytes + EVP_MAX_BLOCK_LENGTH> workingBuf;
 
-    inStream.read(reinterpret_cast<char *>(chunk.data()), chunk.size());
-    std::streamsize inputLen = inStream.gcount();
+    while (!inStream.eof()) {
+        inStream.read(reinterpret_cast<char *>(chunk.data()), chunk.size());
+        std::streamsize inputLen = inStream.gcount();
 
-    int outLen = 0;
-    int ok = EVP_CipherUpdate(ctx, workingBuf.data(), &outLen, reinterpret_cast<const unsigned char *>(chunk.data()),
-                              inputLen);
+        int outLen = 0;
+        int ok = EVP_CipherUpdate(ctx, workingBuf.data(), &outLen,
+                                  reinterpret_cast<const unsigned char *>(chunk.data()), inputLen);
 
-    if (!ok) {
-        throw runtimeCryptoGuardCtxException("EVP_CipherUpdate failed");
-    }
+        if (!ok) {
+            throw runtimeCryptoGuardCtxException("EVP_CipherUpdate failed");
+        }
 
-    std::string cipherChunk;
-    cipherChunk.insert(cipherChunk.end(), workingBuf.begin(), workingBuf.begin() + outLen);
-
-    if (inStream.eof()) {
-        EVP_CipherFinal_ex(ctx, workingBuf.data(), &outLen);
+        std::string cipherChunk;
         cipherChunk.insert(cipherChunk.end(), workingBuf.begin(), workingBuf.begin() + outLen);
-    }
 
-    return cipherChunk;
+        if (inStream.eof()) {
+            EVP_CipherFinal_ex(ctx, workingBuf.data(), &outLen);
+            cipherChunk.insert(cipherChunk.end(), workingBuf.begin(), workingBuf.begin() + outLen);
+        }
+
+        outStream << cipherChunk;
+    }
 }
 
 void CryptoGuardCtx::Impl::EncryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password) {
-    auto ctx = createCipherCtx(password, static_cast<int>(CIPHER_ACTION::ENCRYPT));
-
-    while (!inStream.eof()) {
-        const auto chunk = getCipherChunk(inStream, ctx.get());
-        outStream << chunk;
-    }
+    auto ctx = createCipherCtx(password, CIPHER_ACTION::ENCRYPT);
+    readWriteCipherByChunk(inStream, outStream, ctx.get());
 }
 
 void CryptoGuardCtx::Impl::DecryptFile(std::iostream &inStream, std::iostream &outStream, std::string_view password) {
-    auto ctx = createCipherCtx(password, static_cast<int>(CIPHER_ACTION::DECRYPT));
-
-    while (!inStream.eof()) {
-        const auto chunk = getCipherChunk(inStream, ctx.get());
-        outStream << chunk;
-    }
+    auto ctx = createCipherCtx(password, CIPHER_ACTION::DECRYPT);
+    readWriteCipherByChunk(inStream, outStream, ctx.get());
 }
 
 evp_md_unique_ptr CryptoGuardCtx::Impl::createMessageDigestCtx(std::string_view digestName) {
@@ -155,7 +150,7 @@ std::string CryptoGuardCtx::Impl::getMmessageDigest(std::iostream &inStream, EVP
     constexpr int chunkSizeInBytes = 1024;
 
     while (!inStream.eof()) {
-        std::vector<char> chunk(chunkSizeInBytes, 0);
+        std::array<char, chunkSizeInBytes> chunk;
         inStream.read(chunk.data(), chunk.size());
         std::streamsize inputLen = inStream.gcount();
 
