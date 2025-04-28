@@ -40,3 +40,36 @@ TEST(TestCryptoGuardCtx, TestMainScenario) {
     EXPECT_EQ(givenStr, decryptedStr);
     EXPECT_EQ(checksumOfGivenStr, checksumOfDecryptedStr);
 }
+
+TEST(TestCryptoGuardCtx, TestEmptyInputFileForDecrypt) {
+    // given
+    std::string givenEmptyStr = "", password = "My robust password";
+    std::string decryptedStr;
+
+    // when
+    std::stringstream inSStream, outSStream;
+    inSStream << givenEmptyStr;
+    CryptoGuard::CryptoGuardCtx ctx;
+    ctx.DecryptFile(inSStream, outSStream, password);
+    decryptedStr = outSStream.str();
+
+    // then
+    EXPECT_EQ(givenEmptyStr, decryptedStr);
+}
+
+TEST(TestCryptoGuardCtx, TestChecksum) {
+    // given
+    std::string givenStr = "My private content to be encrypted\n";
+    std::string checksumOfGivenStr =
+        "13acc895c9ae9bcd9662d066ffa5c032fbef6da232ff6f36897ec737d94a1c60";  // calculated by /usr/bin/sha256sum
+    std::string calculatedChecksumOfGivenStr;
+
+    // when
+    std::stringstream inSStream;
+    inSStream << givenStr;
+    CryptoGuard::CryptoGuardCtx ctx;
+    calculatedChecksumOfGivenStr = ctx.CalculateChecksum(inSStream);
+
+    // then
+    EXPECT_EQ(checksumOfGivenStr, calculatedChecksumOfGivenStr);
+}

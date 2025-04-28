@@ -95,6 +95,11 @@ void CryptoGuardCtx::Impl::readWriteCipherByChunk(std::iostream &inStream, std::
 
     while (!inStream.eof()) {
         inStream.read(reinterpret_cast<char *>(chunk.data()), chunk.size());
+
+        if (inStream.bad()) {
+            throw std::runtime_error{"Error while reading chunk from input stream"};
+        }
+
         std::streamsize inputLen = inStream.gcount();
 
         int outLen = 0;
@@ -114,6 +119,10 @@ void CryptoGuardCtx::Impl::readWriteCipherByChunk(std::iostream &inStream, std::
         }
 
         outStream << cipherChunk;
+
+        if (outStream.bad()) {
+            throw std::runtime_error{"Error while writing chunk to output stream"};
+        }
     }
 }
 
@@ -152,6 +161,11 @@ std::string CryptoGuardCtx::Impl::getMmessageDigest(std::iostream &inStream, EVP
     while (!inStream.eof()) {
         std::array<char, chunkSizeInBytes> chunk;
         inStream.read(chunk.data(), chunk.size());
+
+        if (inStream.bad()) {
+            throw std::runtime_error{"Error while reading chunk from input stream"};
+        }
+
         std::streamsize inputLen = inStream.gcount();
 
         int ok = EVP_DigestUpdate(mdctx, chunk.data(), inputLen);
