@@ -5,7 +5,8 @@ namespace CryptoGuard {
 
 ProgramOptions::ProgramOptions() : desc_("Allowed options") {
     namespace po = boost::program_options;
-    desc_.add_options()("help", "print help message")("command", po::value<std::string>(), "command to execute")(
+    desc_.add_options()("help", "print help message")("command", po::value<std::string>(),
+                                                      "command to execute: encrypt/decrypt/checksum")(
         "input", po::value<std::string>(), "input file path")("output", po::value<std::string>(), "output file path")(
         "password", po::value<std::string>(), "owner password");
 }

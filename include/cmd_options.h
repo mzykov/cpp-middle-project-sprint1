@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/program_options.hpp>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -25,7 +26,11 @@ public:
     std::string GetInputFile() const { return inputFile_; }
     std::string GetOutputFile() const { return outputFile_; }
     std::string GetPassword() const { return password_; }
-    boost::program_options::options_description GetHelp() const { return desc_; }
+    std::string GetHelp() const {
+        std::stringstream sout;
+        sout << desc_;
+        return sout.str();
+    }
 
 private:
     COMMAND_TYPE command_;

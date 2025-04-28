@@ -2,7 +2,6 @@
 #include <fstream>
 #include <iostream>
 #include <print>
-#include <sstream>
 #include <stdexcept>
 
 namespace CryptoGuard {
@@ -71,10 +70,6 @@ void CryptoGuardApp::encrypt() {
     ctx_.EncryptFile(in, out, opts_.GetPassword());
 }
 
-std::string CryptoGuardApp::help() {
-    std::stringstream sout;
-    sout << opts_.GetHelp();
-    return sout.str();
-}
+std::string CryptoGuardApp::help() { return opts_.GetHelp(); }
 
 }  // namespace CryptoGuard
