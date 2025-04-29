@@ -8,10 +8,10 @@ namespace CryptoGuard {
 ProgramOptions::ProgramOptions() : desc_("Allowed options"), command_(ProgramOptions::COMMAND_TYPE::HELP) {
 
     namespace po = boost::program_options;
-    desc_.add_options()("help", "print help message")("command", po::value<std::string>(),
+    desc_.add_options()("help", "print help message")("command", po::value<std::string>()->required(),
                                                       "command to execute: encrypt/decrypt/checksum")(
-        "input", po::value<std::string>(), "input file path")("output", po::value<std::string>(), "output file path")(
-        "password", po::value<std::string>(), "owner password");
+        "input", po::value<std::string>()->required(), "input file path")(
+        "output", po::value<std::string>(), "output file path")("password", po::value<std::string>(), "owner password");
 }
 
 std::pair<bool, std::string> ProgramOptions::Parse(int ac, char *av[]) {
@@ -20,6 +20,7 @@ std::pair<bool, std::string> ProgramOptions::Parse(int ac, char *av[]) {
     if (vm.contains("help")) {
         return {true, ""};
     }
+
     if (const auto &[ok, err] = optionsAreConsistent(vm); !ok) {
         return {false, err};
     }
@@ -44,7 +45,6 @@ boost::program_options::variables_map ProgramOptions::parseCommandLine(int ac, c
     po::variables_map vm;
     auto parsed = po::parse_command_line(ac, av, desc_);
     po::store(parsed, vm);
-    po::notify(vm);
     return vm;
 }
 
