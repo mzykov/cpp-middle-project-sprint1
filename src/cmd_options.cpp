@@ -1,5 +1,6 @@
 #include "cmd_options.h"
 #include <array>
+#include <format>
 #include <utility>
 
 namespace CryptoGuard {
@@ -7,21 +8,20 @@ namespace CryptoGuard {
 ProgramOptions::ProgramOptions() : desc_("Allowed options"), command_(ProgramOptions::COMMAND_TYPE::HELP) {
 
     namespace po = boost::program_options;
-    desc_.add_options()("help, h", "print help message")("command, c", po::value<std::string>(),
-                                                         "command to execute: encrypt/decrypt/checksum")(
-        "input, i", po::value<std::string>(),
-        "input file path")("output, o", po::value<std::string>(),
-                           "output file path")("password, p", po::value<std::string>(), "owner password");
+    desc_.add_options()("help", "print help message")("command", po::value<std::string>(),
+                                                      "command to execute: encrypt/decrypt/checksum")(
+        "input", po::value<std::string>(), "input file path")("output", po::value<std::string>(), "output file path")(
+        "password", po::value<std::string>(), "owner password");
 }
 
-bool ProgramOptions::Parse(int ac, char *av[]) {
+std::pair<bool, std::string> ProgramOptions::Parse(int ac, char *av[]) {
     auto vm = parseCommandLine(ac, av);
 
     if (vm.contains("help")) {
-        return true;
+        return {true, ""};
     }
-    if (!optionsAreConsistent(vm)) {
-        return false;
+    if (const auto &[ok, err] = optionsAreConsistent(vm); !ok) {
+        return {false, err};
     }
     if (vm.contains("command")) {
         command_ = commandMapping_[vm["command"].as<std::string>()];
@@ -36,7 +36,7 @@ bool ProgramOptions::Parse(int ac, char *av[]) {
         password_ = vm["password"].as<std::string>();
     }
 
-    return true;
+    return {true, ""};
 }
 
 boost::program_options::variables_map ProgramOptions::parseCommandLine(int ac, char *av[]) {
@@ -48,15 +48,16 @@ boost::program_options::variables_map ProgramOptions::parseCommandLine(int ac, c
     return vm;
 }
 
-bool ProgramOptions::optionsAreConsistent(const boost::program_options::variables_map &vm) const {
+std::pair<bool, std::string>
+ProgramOptions::optionsAreConsistent(const boost::program_options::variables_map &vm) const {
     if (!vm.count("command")) {
-        return false;
+        return {false, "command param is empty"};
     }
 
     const auto &cmd = vm["command"].as<std::string>();
 
     if (!commandMapping_.count(cmd)) {
-        return false;
+        return {false, std::format("unknown command: '{}'", cmd)};
     }
 
     std::unordered_map<ProgramOptions::COMMAND_TYPE, std::array<std::pair<std::string, bool>, 3>> consistensyMapping = {
@@ -68,26 +69,26 @@ bool ProgramOptions::optionsAreConsistent(const boost::program_options::variable
     const auto cmdType = commandMapping_.at(cmd);
 
     for (const auto &[opt, musthave] : consistensyMapping[cmdType]) {
-        if (!ProgramOptions::optionIsConsistent(vm, opt, musthave))
-            return false;
+        if (const auto &[ok, err] = ProgramOptions::optionIsConsistent(vm, opt, musthave); !ok)
+            return {false, std::format("command '{}': {}", cmd, err)};
     }
 
-    return true;
+    return {true, ""};
 }
 
-bool ProgramOptions::optionIsConsistent(const boost::program_options::variables_map &vm, const std::string &opt,
-                                        bool musthave) const {
+std::pair<bool, std::string> ProgramOptions::optionIsConsistent(const boost::program_options::variables_map &vm,
+                                                                const std::string &opt, bool musthave) const {
     if (vm.contains(opt) != musthave)
-        return false;
+        return {false, std::format("required option '--{}' is not set", opt)};
 
     if (musthave) {
         const auto &val = vm[opt].as<std::string>();
         if (val.length() == 0) {
-            return false;
+            return {false, std::format("required option '--{}' is empty", opt)};
         }
     }
 
-    return true;
+    return {true, ""};
 }
 
 }  // namespace CryptoGuard

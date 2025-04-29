@@ -1,4 +1,5 @@
 #include "crypto_guard_app.h"
+#include <format>
 #include <fstream>
 #include <iostream>
 #include <print>
@@ -7,8 +8,9 @@
 namespace CryptoGuard {
 
 CryptoGuardApp::CryptoGuardApp(int ac, char *av[]) {
-    if (!opts_.Parse(ac, av)) {
-        throw std::invalid_argument{"Invalid command line options"};
+    const auto &[ok, err] = opts_.Parse(ac, av);
+    if (!ok) {
+        throw std::invalid_argument{std::format("Invalid command line options: {}", err)};
     }
 }
 

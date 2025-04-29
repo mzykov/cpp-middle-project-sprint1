@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 namespace CryptoGuard {
 
@@ -12,7 +13,7 @@ public:
     ProgramOptions();
     ~ProgramOptions() = default;
 
-    bool Parse(int ac, char *av[]);
+    std::pair<bool, std::string> Parse(int ac, char *av[]);
 
     enum class COMMAND_TYPE {
         CHECKSUM,
@@ -48,13 +49,9 @@ private:
     boost::program_options::options_description desc_;
 
     boost::program_options::variables_map parseCommandLine(int ac, char *av[]);
-    bool optionsAreConsistent(const boost::program_options::variables_map &vm) const;
-    bool optionIsConsistent(const boost::program_options::variables_map &vm, const std::string &opt,
-                            bool musthave) const;
-    void setCommand(const boost::program_options::variables_map &vm);
-    void setInputFile(const boost::program_options::variables_map &vm);
-    void setOutputFile(const boost::program_options::variables_map &vm);
-    void setPassword(const boost::program_options::variables_map &vm);
+    std::pair<bool, std::string> optionsAreConsistent(const boost::program_options::variables_map &vm) const;
+    std::pair<bool, std::string> optionIsConsistent(const boost::program_options::variables_map &vm,
+                                                    const std::string &opt, bool musthave) const;
 };
 
 }  // namespace CryptoGuard

@@ -8,7 +8,7 @@ TEST(TestProgramOptions, TestHelp) {
     const char *av[] = {"./CryptoGuard", "--help"};
     // when
     CryptoGuard::ProgramOptions opts;
-    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    const auto &[ok, _] = opts.Parse(ac, const_cast<char **>(av));
     // then
     EXPECT_EQ(ok, true);
     EXPECT_EQ(opts.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::HELP);
@@ -23,7 +23,7 @@ TEST(TestProgramOptions, TestChecksum) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    const auto &[ok, _] = opts.Parse(ac, const_cast<char **>(av));
     // then
     EXPECT_EQ(ok, true);
     EXPECT_EQ(opts.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::CHECKSUM);
@@ -40,7 +40,7 @@ TEST(TestProgramOptions, TestEncrypt) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    const auto &[ok, _] = opts.Parse(ac, const_cast<char **>(av));
     // then
     EXPECT_EQ(ok, true);
     EXPECT_EQ(opts.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::ENCRYPT);
@@ -59,7 +59,7 @@ TEST(TestProgramOptions, TestDecrypt) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    const auto &[ok, _] = opts.Parse(ac, const_cast<char **>(av));
     // then
     EXPECT_EQ(ok, true);
     EXPECT_EQ(opts.GetCommand(), CryptoGuard::ProgramOptions::COMMAND_TYPE::DECRYPT);
@@ -79,7 +79,7 @@ TEST(TestProgramOptions, TestChecksumNoInput) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    const auto &[ok, _] = opts.Parse(ac, const_cast<char **>(av));
     // then
     EXPECT_EQ(ok, false);
 }
@@ -95,7 +95,7 @@ TEST(TestProgramOptions, TestDecryptNoInputOutput) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    const auto &[ok, _] = opts.Parse(ac, const_cast<char **>(av));
     // then
     EXPECT_EQ(ok, false);
 }
@@ -111,7 +111,7 @@ TEST(TestProgramOptions, TestEncryptNoInputOutput) {
     };
     // when
     CryptoGuard::ProgramOptions opts;
-    bool ok = opts.Parse(ac, const_cast<char **>(av));
+    const auto &[ok, _] = opts.Parse(ac, const_cast<char **>(av));
     // then
     EXPECT_EQ(ok, false);
 }
