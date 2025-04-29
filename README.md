@@ -49,11 +49,11 @@ conan build --settings=build_type=Debug ..
 ```bash
 echo "Hello OpenSSL crypto world!" > input.txt
 
-./CryptoGuard -i input.txt     -o encrypted.txt -p 1234 --command encrypt
-./CryptoGuard -i encrypted.txt -o decrypted.txt -p 1234 --command decrypt
+./CryptoGuard --input input.txt     --output encrypted.txt --password 1234 --command encrypt
+./CryptoGuard --input encrypted.txt --output decrypted.txt --password 1234 --command decrypt
 
-./CryptoGuard -i input.txt     --command checksum
-./CryptoGuard -i decrypted.txt --command checksum
+./CryptoGuard --input input.txt     --command checksum
+./CryptoGuard --input decrypted.txt --command checksum
 ```
 
 ### Команда для запуска тестов
