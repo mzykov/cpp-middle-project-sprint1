@@ -57,6 +57,20 @@ TEST(TestCryptoGuardCtx, TestEmptyInputFileForDecrypt) {
     EXPECT_EQ(givenEmptyStr, decryptedStr);
 }
 
+TEST(TestCryptoGuardCtx, TestFailedInputFileForEncrypt) {
+    // given
+    std::string givenStr = "My private content", password = "My robust password";
+
+    // when
+    std::stringstream inSStream, outSStream;
+    inSStream << givenStr;
+    inSStream.setstate(std::ios_base::failbit);
+    CryptoGuard::CryptoGuardCtx ctx;
+
+    // then
+    EXPECT_THROW(ctx.EncryptFile(inSStream, outSStream, password), std::exception);
+}
+
 TEST(TestCryptoGuardCtx, TestChecksum) {
     // given
     std::string givenStr = "My private content to be encrypted\n";
