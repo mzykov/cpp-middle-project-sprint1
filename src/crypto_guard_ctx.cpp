@@ -53,7 +53,7 @@ private:
 };
 
 std::exception CryptoGuardCtx::Impl::runtimeCryptoGuardCtxException(std::string_view msg) {
-    return std::runtime_error{std::format("{}\n{}", msg, ERR_error_string(ERR_get_error(), nullptr))};
+    return std::runtime_error{std::format("{}: {}", msg, ERR_error_string(ERR_get_error(), nullptr))};
 }
 
 AesCipherParams CryptoGuardCtx::Impl::createCipherParamsFromPassword(std::string_view password) {
