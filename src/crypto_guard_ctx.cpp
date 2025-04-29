@@ -110,15 +110,12 @@ void CryptoGuardCtx::Impl::readWriteCipherByChunk(std::iostream &inStream, std::
             throw runtimeCryptoGuardCtxException("EVP_CipherUpdate failed");
         }
 
-        std::string cipherChunk;
-        cipherChunk.insert(cipherChunk.end(), workingBuf.begin(), workingBuf.begin() + outLen);
+        outStream.write(reinterpret_cast<const char *>(workingBuf.data()), outLen);
 
         if (inStream.eof()) {
             EVP_CipherFinal_ex(ctx, workingBuf.data(), &outLen);
-            cipherChunk.insert(cipherChunk.end(), workingBuf.begin(), workingBuf.begin() + outLen);
+            outStream.write(reinterpret_cast<const char *>(workingBuf.data()), outLen);
         }
-
-        outStream << cipherChunk;
 
         if (outStream.bad()) {
             throw std::runtime_error{"Error while writing chunk to output stream"};
@@ -157,9 +154,9 @@ evp_md_unique_ptr CryptoGuardCtx::Impl::createMessageDigestCtx(std::string_view 
 
 std::string CryptoGuardCtx::Impl::getMmessageDigest(std::iostream &inStream, EVP_MD_CTX *mdctx) {
     constexpr int chunkSizeInBytes = 1024;
+    std::array<char, chunkSizeInBytes> chunk;
 
     while (!inStream.eof()) {
-        std::array<char, chunkSizeInBytes> chunk;
         inStream.read(chunk.data(), chunk.size());
 
         if (inStream.bad()) {
